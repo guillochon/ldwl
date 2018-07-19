@@ -17,33 +17,14 @@ aspects = ['imperfective', 'perfective', 'progressive']
 
 conj_types = list(product(*[tenses, persons, moods, aspects]))
 
-#for word in tqdm(list(english)):
-#    for ct in conj_types:
-#        conj = conjugate(word, tense=ct[0], person=ct[1], mood=ct[2], aspect=ct[3])
-#        if conj is not None:
-#            english.add(conj)
-#            english.add(p.plural(conj))
+for word in tqdm(list(english)):
+    for ct in conj_types:
+        conj = conjugate(word, tense=ct[0], person=ct[1], mood=ct[2], aspect=ct[3])
+        if conj is not None:
+            english.add(conj)
+            english.add(p.plural(conj))
 
 full_english = english
-
-#cur_len = 2
-#len_limit = 5
-#english = set()
-#while cur_len < len_limit:
-#    for word in tqdm(full_english):
-#        if len(word) != cur_len:
-#            continue
-#        include = True
-#        sword = OrderedDict.fromkeys(list(word))
-#        for word2 in full_english:
-#            if len(word2) <= cur_len:
-#                continue
-#            sword2 = OrderedDict.fromkeys(list(word2))
-#            if sword.issubset(sword2):
-#                include = False
-#                break
-#        if include:
-#            included.add(word)
 
 def drop_letter(word, pos):
     return (word[:pos] + word[(pos + 1):])
