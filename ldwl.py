@@ -18,13 +18,13 @@ aspects = ['imperfective', 'perfective', 'progressive']
 conj_types = list(product(*[tenses, persons, moods, aspects]))
 
 for word in tqdm(list(english)):
+    english.add(p.plural(word))
     for ct in conj_types:
         conj = conjugate(
             word, tense=ct[0], person=ct[1], mood=ct[2],
             aspect=ct[3])
         if conj is not None:
             english.add(conj)
-            english.add(p.plural(conj))
 
 full_english = english
 
@@ -36,10 +36,6 @@ def insert_letter(word, letter, pos):
 known_ladders = [[x] for x in full_english if len(x) == 2]
 
 max_depth = 20
-
-drop_list = list(reversed([range(i) for i in range(3, max_depth + 1)]))
-
-a_ladder = []
 
 lb = 0
 for depth in tqdm(range(2, max_depth)):
@@ -55,4 +51,10 @@ for depth in tqdm(range(2, max_depth)):
                     known_ladders.append(known_ladders[li] + [new])
     lb = le
 
-print(known_ladders[-1])
+print('\n')
+lkl = 0
+for kl in reversed(known_ladders):
+    if len(kl) < lkl:
+        break
+    print(kl)
+    lkl = len(kl)
