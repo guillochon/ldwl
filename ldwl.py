@@ -29,37 +29,6 @@ for word in tqdm(list(english)):
 full_english = english
 
 
-def drop_letter(word, pos):
-    return (word[:pos] + word[(pos + 1):])
-
-
-def ldwl(word, drop_list, dictionary):
-    drop_possibilities = product(*drop_list[len(drop_list) - len(word) + 2:])
-
-    for dp in drop_possibilities:
-        ladder = True
-        new = word
-        for pos in dp:
-            new = drop_letter(new, pos)
-            if new not in dictionary:
-                ladder = False
-                break
-        if ladder:
-            return make_ladder(word, dp)
-        else:
-            continue
-
-
-def make_ladder(word, drops):
-    lad = [word]
-    new = word
-    for d in drops:
-        new = drop_letter(new, d)
-        lad.append(new)
-
-    return lad
-
-
 def insert_letter(word, letter, pos):
     return word[:pos] + letter + word[pos:]
 
@@ -81,7 +50,8 @@ for depth in tqdm(range(2, max_depth)):
             for c in range(ord('a'), ord('z') + 1):
                 let = chr(c)
                 new = insert_letter(base, let, pos)
-                if new in english and new not in [x[-1] for x in known_ladders[le:]]:
+                if new in english and new not in [
+                        x[-1] for x in known_ladders[le:]]:
                     known_ladders.append(known_ladders[li] + [new])
     lb = le
 
