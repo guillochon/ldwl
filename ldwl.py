@@ -2,12 +2,12 @@ import inflect
 import nltk
 from pattern.en import conjugate
 from tqdm import tqdm
-from itertools import product, combinations
-from collections import OrderedDict
+from itertools import product
 
 p = inflect.engine()
 
-english = set(w.lower() for w in nltk.corpus.wordnet.words()) | set(w.lower() for w in nltk.corpus.words.words())
+english = set(w.lower() for w in nltk.corpus.wordnet.words()) | set(
+    w.lower() for w in nltk.corpus.words.words())
 
 
 tenses = ['past', 'infinitive', 'present', 'future']
@@ -19,28 +19,22 @@ conj_types = list(product(*[tenses, persons, moods, aspects]))
 
 for word in tqdm(list(english)):
     for ct in conj_types:
-        conj = conjugate(word, tense=ct[0], person=ct[1], mood=ct[2], aspect=ct[3])
+        conj = conjugate(
+            word, tense=ct[0], person=ct[1], mood=ct[2],
+            aspect=ct[3])
         if conj is not None:
             english.add(conj)
             english.add(p.plural(conj))
 
 full_english = english
 
+
 def drop_letter(word, pos):
     return (word[:pos] + word[(pos + 1):])
 
+
 def ldwl(word, drop_list, dictionary):
     drop_possibilities = product(*drop_list[len(drop_list) - len(word) + 2:])
-
-    for hl in range(2, len(word) - 1):
-        heuristic = combinations(list(range(len(word))), hl)
-        check = False
-        for h in heuristic:
-            if ''.join([word[x] for x in h]) in dictionary:
-                check = True
-                break
-        if not check:
-            return None
 
     for dp in drop_possibilities:
         ladder = True
@@ -55,6 +49,7 @@ def ldwl(word, drop_list, dictionary):
         else:
             continue
 
+
 def make_ladder(word, drops):
     lad = [word]
     new = word
@@ -64,18 +59,30 @@ def make_ladder(word, drops):
 
     return lad
 
-max_len = 3
-len_limit = 11
-drop_list = list(reversed([range(i) for i in range(3, len_limit + 1)]))
-best = None
 
-while max_len <= len_limit:
-    limited_english = set([x for x in full_english if len(x) == max_len])
-    reduced_english = set([x for x in full_english if len(x) < max_len])
-    for word in tqdm(limited_english):
-        ladder = ldwl(word, drop_list, reduced_english)
-        if ladder is not None:
-            best = ladder
-            tqdm.write(', '.join(best))
-            break
-    max_len += 1
+def insert_letter(word, letter, pos):
+    return word[:pos] + letter + word[pos:]
+
+
+known_ladders = [[x] for x in full_english if len(x) == 2]
+
+max_depth = 20
+
+drop_list = list(reversed([range(i) for i in range(3, max_depth + 1)]))
+
+a_ladder = []
+
+lb = 0
+for depth in tqdm(range(2, max_depth)):
+    le = len(known_ladders)
+    for li in tqdm(range(lb, le)):
+        base = known_ladders[li][-1]
+        for pos in range(len(base) + 1):
+            for c in range(ord('a'), ord('z') + 1):
+                let = chr(c)
+                new = insert_letter(base, let, pos)
+                if new in english and new not in [x[-1] for x in known_ladders[le:]]:
+                    known_ladders.append(known_ladders[li] + [new])
+    lb = le
+
+print(known_ladders[-1])
